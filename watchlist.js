@@ -7,24 +7,22 @@ const router = express();
 router.use(authenticate);
 
 router.get("/:userId", (req, res, next) => {
-    return res.status(200).json(getWatchlist(req.user.id));
+    return res.status(200).send(getWatchlist(req.user.id));
 });
 
 router.post("/:userId/movies",  authorizeModification, (req, res, next) => {
-    console.log(req.body);
-    console.log(req.user);
     addMovie(req.user.id, req.body);
-    return res.status(201);
+    return res.status(201).json({message: "Movie added"});
 });
 
 router.put("/:userId/movies/:movieId", authorizeModification, (req, res, next) => {
-    updateMovie(req.user.id, req.movieId, req.body);
-    return res.status(200);
+    updateMovie(req.user.id, req.params.movieId, req.body);
+    return res.status(200).json({message: "Movie updated"});
 });
 
 router.delete("/:userId/movies/:movieId", authorizeModification, (req, res, next) => {
-    deleteMovie(req.user.id, req.movieId);
-    return res.status(200);
+    deleteMovie(req.user.id, req.params.movieId);
+    return res.status(200).json({message: "Movie deleted"});
 });
 
 export default router;
