@@ -13,23 +13,25 @@ app.use(helmet());
 app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.send("Family Movie Watchlist API");
+  return res.send("Family Movie Watchlist API");
 });
-
-app.use("/api/watchlist", watchlistRoutes);
 
 app.post("/api/auth/login", (req, res) => {
-  if (!req.body || !req.body.username || !req.body.password) {
-    return res.status(400);
+    if (!req.body || !req.body.username || !req.body.password) {
+      return res.status(400).json({error: "empty fields"});
+    }
+    const user = findByUsername(req.body.username);
+    if (!user || user._password !== req.body.password) {
+      return res.status(401).json({error: "invalid credentials"});
+    }
+    else {
+      const token = jwt.sign({id: user.id, name: user.name, username: user.username, role: user.role}, process.env.JWT_SECRET, { expiresIn: "1d" });
+      return res.status(200).json({token});
+    }
   }
+);
 
-  const user = findByUsername(req.body.username);
-  if (!user || user._password !== req.body.password) {
-    return res.status(401);
-  }
-  const token = jwt.sign({id: user.id, name: user.name, username: user.username, role: user.role}, process.env.JWT_SECRET, { expiresIn: "1d" });
-  return res.status(200).json({token})
-});
+app.use("/api/watchlist", watchlistRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}...`);
